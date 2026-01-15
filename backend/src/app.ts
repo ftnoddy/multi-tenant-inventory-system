@@ -32,10 +32,12 @@ class App {
   }
 
   public listen() {
-    this.app.listen(this.port, () => {
+    // Use process.env.PORT for cloud platforms (Render, Heroku, etc.)
+    const port = process.env.PORT || this.port;
+    this.app.listen(port, () => {
       logger.info(`=================================`);
       logger.info(`======= ENV: ${this.env} =======`);
-      logger.info(`🚀 App listening on the port ${this.port}`);
+      logger.info(`🚀 App listening on the port ${port}`);
       logger.info(`=================================`);
     });
   }
@@ -64,9 +66,11 @@ class App {
   private initializeMiddlewares() {
     this.app.use(morgan(LOG_FORMAT, { stream }));
     
-    // CORS configuration - allow all origins in development
+    // CORS configuration
     const corsOptions = {
-      origin: this.env === 'production' ? ORIGIN : true, // Allow all origins in development
+      origin: this.env === 'production' 
+        ? (ORIGIN || process.env.FRONTEND_URL || '*') 
+        : true, // Allow all origins in development
       credentials: CREDENTIALS || true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
